@@ -3,6 +3,13 @@ import { Subscription } from 'rxjs';
 import { CryptoService } from './crypto.service';
 import { PortfolioEntry } from './interfaces/portfolio-entry';
 
+interface Tokenomics {
+  name: string;
+  flag: string;
+  price: number;
+  marketcap: number;
+}
+
 interface Country {
   name: string;
   flag: string;
@@ -49,14 +56,16 @@ export class AppComponent implements OnInit {
 
   title = 'chart-test';
 
-  streamData: any[];
+  streamData: any[] = [];
+
+  tableData: Array<Tokenomics> = [];
 
   subscription: Subscription;
 
   tokenSymbol = "";
   tokenAmount : number = 0.0;
 
-  cryptoPortfolio: Array<PortfolioEntry>;
+  cryptoPortfolio: Array<PortfolioEntry> = [];
 
   name = '';
 
@@ -65,10 +74,25 @@ export class AppComponent implements OnInit {
     this.subscription = this.coinService.getData().subscribe(data => {
       this.streamData = JSON.parse(data);
       console.log(this.streamData.length);
-//      for(let c of this.streamData) {
-//        console.log(c);
-//      }
+      for(let c of this.streamData) {
+        console.log(c);
+      }
+
+      for(let i=0; i < 4; i++) {
+
+        let entry: Tokenomics ={
+          name: this.streamData[i].symbol,
+          flag: this.streamData[i].image,
+          price: this.streamData[i].current_price,
+          marketcap: this.streamData[i].market_cap
+        }
+        console.log(entry);
+        this.tableData.push(entry);
+
+      }
+
     })
+
 
   }
 
