@@ -2,13 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { CryptoService } from './crypto.service';
 import { PortfolioEntry } from './interfaces/portfolio-entry';
+import { Tokenomics } from './interfaces/tokenomics';
 
-interface Tokenomics {
-  name: string;
-  flag: string;
-  price: number;
-  marketcap: number;
-}
 
 interface Country {
   name: string;
@@ -65,7 +60,7 @@ export class AppComponent implements OnInit {
   tokenSymbol = "";
   tokenAmount : number = 0.0;
 
-  cryptoPortfolio: Array<PortfolioEntry> = [];
+  cryptoPortfolio: Array<Tokenomics> = [];
 
   name = '';
 
@@ -74,22 +69,22 @@ export class AppComponent implements OnInit {
     this.subscription = this.coinService.getData().subscribe(data => {
       this.streamData = JSON.parse(data);
       console.log(this.streamData.length);
-      for(let c of this.streamData) {
-        console.log(c);
-      }
-
-      for(let i=0; i < 4; i++) {
-
-        let entry: Tokenomics ={
-          name: this.streamData[i].symbol,
-          flag: this.streamData[i].image,
-          price: this.streamData[i].current_price,
-          marketcap: this.streamData[i].market_cap
-        }
-        console.log(entry);
-        this.tableData.push(entry);
-
-      }
+//      for(let c of this.streamData) {
+//        console.log(c);
+//      }
+//
+//      for(let i=0; i < 4; i++) {
+//
+//        let entry: Tokenomics ={
+//          name: this.streamData[i].symbol,
+//          flag: this.streamData[i].image,
+//          price: this.streamData[i].current_price,
+//          marketcap: this.streamData[i].market_cap
+//        }
+//        console.log(entry);
+//        this.tableData.push(entry);
+//
+//      }
 
     })
 
@@ -107,12 +102,38 @@ export class AppComponent implements OnInit {
       return;
     }
 
-    this.cryptoPortfolio.push({symbol: this.tokenSymbol, amount: this.tokenAmount})
+    let lowerSymbol = this.tokenSymbol.toLowerCase();
+    let userSymbolIdx: number = this.streamData.findIndex( elem => elem.symbol.toLowerCase() === lowerSymbol);
+
+    if(userSymbolIdx === -1) {
+      alert(`Symbol not found: ${this.tokenSymbol}`);
+      return;
+    }
+
+    let userSymbol = this.streamData[userSymbolIdx];
+
+    let entry: Tokenomics ={
+      name: userSymbol.symbol,
+      flag: userSymbol.image,
+      price: userSymbol.current_price,
+      marketcap: userSymbol.market_cap,
+      idx: userSymbolIdx,
+      amount: this.tokenAmount,
+      btcValue: 0.0
+    }
+
+    // Add it to the table
+    this.tableData.push(entry);
+
+    // Add it to the portfolio
+    this.cryptoPortfolio.push(entry);
+    this.cryptoPortfolio = this.cryptoPortfolio.slice();
+
     alert(`Added ${this.tokenAmount} ${this.tokenSymbol}`);
     this.tokenSymbol = "";
     this.tokenAmount = 0.0;
     for (let x of this.cryptoPortfolio) {
-      console.log(x);
+      console.log(`New portfolio ${x.name}`);
     }
     if(event) event.stopPropagation();
   }
