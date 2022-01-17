@@ -14,4 +14,8 @@ export class CryptoService {
     return this.http.get<string>('http://localhost:5001/api/default');
   }
 
+  getPortfolio(): Observable<string> {
+    return this.http.get<string>('http://localhost:5001/api/portfolio');
+  }
+
 }

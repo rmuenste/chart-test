@@ -57,6 +57,8 @@ export class AppComponent implements OnInit {
 
   subscription: Subscription;
 
+  portfolioSubscription: Subscription;
+
   tokenSymbol = "";
   tokenAmount : number = 0.0;
 
@@ -64,30 +66,47 @@ export class AppComponent implements OnInit {
 
   name = '';
 
+  addPortfolioEntrySimple(name: string, amount: number): void {
+
+    let lowerSymbol = name.toLowerCase();
+    let userSymbolIdx: number = this.streamData.findIndex( elem => elem.symbol.toLowerCase() === lowerSymbol);
+    if(userSymbolIdx !== -1) {
+      let userSymbol = this.streamData[userSymbolIdx];
+
+      let entry: Tokenomics ={
+        name: userSymbol.symbol,
+        flag: userSymbol.image,
+        price: userSymbol.current_price,
+        marketcap: userSymbol.market_cap,
+        idx: userSymbolIdx,
+        amount: amount,
+        btcValue: 0.0
+      }
+
+      // Add it to the table
+      this.tableData.push(entry);
+
+      // Add it to the portfolio
+      this.cryptoPortfolio.push(entry);
+      this.cryptoPortfolio = this.cryptoPortfolio.slice();
+    }
+
+  }
+
   ngOnInit(): void {
 
     this.subscription = this.coinService.getData().subscribe(data => {
       this.streamData = JSON.parse(data);
       console.log(this.streamData.length);
-//      for(let c of this.streamData) {
-//        console.log(c);
-//      }
-//
-//      for(let i=0; i < 4; i++) {
-//
-//        let entry: Tokenomics ={
-//          name: this.streamData[i].symbol,
-//          flag: this.streamData[i].image,
-//          price: this.streamData[i].current_price,
-//          marketcap: this.streamData[i].market_cap
-//        }
-//        console.log(entry);
-//        this.tableData.push(entry);
-//
-//      }
 
-    })
+    this.coinService.getPortfolio().subscribe(data => {
+      let stream = JSON.parse(data);
+      for (let s of stream) {
+        this.addPortfolioEntrySimple(s.symbol as string, s.amount as number)
+      }
+    });
 
+    });
 
   }
 
@@ -141,5 +160,6 @@ export class AppComponent implements OnInit {
   onInputSymbol(event: Event) {
     console.log( (event.target as HTMLInputElement).value);
   }
+
 
 }
